@@ -1,0 +1,3 @@
+# MediaPipe hand landmarker model bundle
+# Download with: python scripts/download_models.py
+hand_landmarker.task
