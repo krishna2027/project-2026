@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Language Translator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════  HEADER  ══════════════════════════════ -->
+  <header class="app-header">
+    <div class="header-inner">
+
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">🤟</span>
+        <div>
+          <h1 class="brand-title">Sign Language Translator</h1>
+          <p class="brand-sub">Bridging the gap between deaf and hearing worlds</p>
+        </div>
+      </div>
+
+      <div class="header-badges">
+        <div class="badge" id="modelBadge">
+          <span class="badge-dot" id="modelDot"></span>
+          <span id="modelLabel">Checking model…</span>
+        </div>
+        <div class="badge hand-badge" id="handBadge">
+          <span class="badge-dot dim" id="handDot"></span>
+          <span id="handLabel">No hand</span>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ════════════════════════  MAIN CONTENT  ══════════════════════════ -->
+  <main class="main-grid">
+
+    <!-- ── Camera panel ── -->
+    <section class="card camera-card" aria-label="Camera feed">
+
+      <div class="card-head">
+        <h2 class="card-title">
+          <span class="icon-circle cam-icon">📷</span>
+          Live Camera
+        </h2>
+        <span class="live-pill">
+          <span class="live-dot"></span>LIVE
+        </span>
+      </div>
+
+      <div class="camera-frame" id="cameraFrame">
+        <img
+          id="videoFeed"
+          src="/video_feed"
+          alt="Live camera feed with hand tracking"
+          draggable="false"
+        />
+        <!-- Detected-sign badge overlaid on camera -->
+        <div class="sign-bubble" id="signBubble" aria-live="polite">
+          <span id="signBubbleText">–</span>
+        </div>
+      </div>
+
+      <!-- Confidence & stability meters -->
+      <div class="meters">
+
+        <div class="meter-row">
+          <span class="meter-label">Confidence</span>
+          <div class="meter-track" role="progressbar"
+               aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+            <div class="meter-fill conf-fill" id="confFill"></div>
+          </div>
+          <span class="meter-value" id="confValue">0%</span>
+        </div>
+
+        <div class="meter-row">
+          <span class="meter-label">Stability</span>
+          <div class="meter-track" role="progressbar"
+               aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+            <div class="meter-fill stab-fill" id="stabFill"></div>
+          </div>
+          <span class="meter-value" id="stabHint">hold sign…</span>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ── Text output panel ── -->
+    <section class="card text-card" aria-label="Translated text output">
+
+      <div class="card-head">
+        <h2 class="card-title">
+          <span class="icon-circle text-icon">💬</span>
+          Output Text
+        </h2>
+        <button class="icon-btn" id="copyBtn" title="Copy text to clipboard"
+                aria-label="Copy text">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+               fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="text-output-wrap">
+        <div class="text-output" id="textOutput" aria-live="polite">
+          <span class="placeholder" id="placeholder">Start signing to type…</span>
+        </div>
+        <span class="caret" id="caret" aria-hidden="true">|</span>
+      </div>
+
+      <div class="text-meta">
+        <span id="charCount">0 characters</span>
+        <span id="wordCount">0 words</span>
+      </div>
+
+      <!-- Control buttons -->
+      <div class="controls">
+        <button class="ctrl-btn space-btn"    id="spaceBtn"     aria-label="Add space">
+          <kbd>⎵</kbd> Space
+        </button>
+        <button class="ctrl-btn back-btn"     id="backBtn"      aria-label="Backspace">
+          ⌫ Backspace
+        </button>
+        <button class="ctrl-btn clear-btn"    id="clearBtn"     aria-label="Clear all">
+          🗑 Clear
+        </button>
+        <button class="ctrl-btn speak-btn"    id="speakBtn"     aria-label="Speak text">
+          🔊 Speak
+        </button>
+      </div>
+
+      <!-- Toast notification (copy feedback) -->
+      <div class="toast" id="toast" role="status" aria-live="polite">Copied!</div>
+
+    </section>
+
+  </main>
+
+  <!-- ══════════════════════  HOW IT WORKS  ═════════════════════════════ -->
+  <section class="how-section" aria-label="How to use the translator">
+    <h2 class="how-title">How to Use</h2>
+    <div class="how-grid">
+      <div class="how-card">
+        <span class="how-icon">👋</span>
+        <h3>Show your sign</h3>
+        <p>Hold your hand up clearly in front of the camera so MediaPipe can detect all 21 landmarks.</p>
+      </div>
+      <div class="how-card">
+        <span class="how-icon">⏱</span>
+        <h3>Hold steady (~1 s)</h3>
+        <p>Keep the sign stable until the <em>Stability</em> bar fills completely. The letter is then typed automatically.</p>
+      </div>
+      <div class="how-card">
+        <span class="how-icon">📝</span>
+        <h3>See it typed</h3>
+        <p>Every accepted sign appears in the text panel on the right. Use the controls below to add spaces or correct mistakes.</p>
+      </div>
+      <div class="how-card">
+        <span class="how-icon">🔊</span>
+        <h3>Speak aloud</h3>
+        <p>Press <strong>Speak</strong> to read your composed message out loud using the browser's text-to-speech engine.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════  SETUP NOTICE  ════════════════════════════ -->
+  <section class="setup-section" id="setupNotice" style="display:none"
+           aria-label="Model setup instructions">
+    <div class="setup-inner">
+      <span class="setup-icon">⚠️</span>
+      <div>
+        <h3>Model not yet trained</h3>
+        <p>
+          The sign recognition model has not been trained yet.
+          Camera hand-tracking is <strong>fully working</strong> – you can
+          watch the landmark skeleton live. To enable automatic sign
+          recognition, follow the steps in the <code>README.md</code>:
+        </p>
+        <ol>
+          <li>Run <code>python scripts/collect_data.py</code> to record your training samples.</li>
+          <li>Run <code>python scripts/train_model.py</code> to train and save the model.</li>
+          <li>Restart the server – the model loads automatically on startup.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════  FOOTER  ═══════════════════════════════ -->
+  <footer class="app-footer">
+    <p>
+      Built with ❤️ for the deaf community &nbsp;·&nbsp;
+      MediaPipe hand tracking &nbsp;·&nbsp; TensorFlow sign recognition
+    </p>
+  </footer>
+
+  <script src="/static/js/main.js"></script>
+</body>
+</html>
